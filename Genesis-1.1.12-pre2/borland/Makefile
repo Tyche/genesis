@@ -137,6 +137,7 @@ clean:
 cleanconfig:
   @echo Cleaning configuration...
   -@del version.cfg systype.cfg version.h systype.h 2>NUL
+  -@del $(SD)\include\config.h $(SD)\include\systype.h $(SD)\include\version.h
   
 # Install the genesis driver and coldcc compiler to the supplied directory  
 install: $(DRIVER) $(COMPILER) 
