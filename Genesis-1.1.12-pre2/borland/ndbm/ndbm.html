@@ -1,0 +1,241 @@
+Content-type: text/html
+
+<HTML><HEAD><TITLE>Manpage of NDBM</TITLE>
+</HEAD><BODY>
+<H1>NDBM</H1>
+Section: C Library Functions (3)<BR>Updated: May 20, 1986<BR><A HREF="#index">Index</A>
+<A HREF="http://localhost/cgi-bin/man/man2html">Return to Main Contents</A><HR>
+
+
+<A NAME="lbAB">&nbsp;</A>
+<H2>NAME</H2>
+
+dbm_open, dbm_close, dbm_fetch, dbm_store, dbm_delete, dbm_firstkey, dbm_nextkey, dbm_error, dbm_clearerr - data base subroutines
+<A NAME="lbAC">&nbsp;</A>
+<H2>SYNOPSIS</H2>
+
+<PRE>
+
+<B>#include &lt;<A HREF="file:/usr/include/ndbm.h">ndbm.h</A>&gt;
+
+typedef struct {
+    char *dptr;
+    int dsize;
+} datum;
+
+DBM *dbm_open(file, flags, mode)
+    char *file;
+    int flags, mode;
+
+void dbm_close(db)
+    DBM *db;
+
+datum dbm_fetch(db, key)
+    DBM *db;
+    datum key;
+
+int dbm_store(db, key, content, flags)
+    DBM *db;
+    datum key, content;
+    int flags;
+
+int dbm_delete(db, key)
+    DBM *db;
+    datum key;
+
+datum dbm_firstkey(db)
+    DBM *db;
+
+datum dbm_nextkey(db)
+    DBM *db;
+
+int dbm_error(db)
+    DBM *db;
+
+int dbm_clearerr(db)
+    DBM *db;
+</B></PRE><A NAME="lbAD">&nbsp;</A>
+<H2>DESCRIPTION</H2>
+
+These functions maintain key/content pairs in a data base.
+The functions will handle very large (a billion blocks)
+databases and will access a keyed item in one or two file system accesses.
+This package replaces the earlier
+<I><A HREF="http://localhost/cgi-bin/man/man2html?3x+dbm">dbm</A></I>(3x)
+
+library, which managed only a single database.
+<P>
+
+<I>Key</I>s
+
+and
+<I>content</I>s
+
+are described by the
+<I>datum</I>
+
+typedef.  A
+<I>datum</I>
+
+specifies a string of
+<I>dsize</I>
+
+bytes pointed to by
+<I>dptr.</I>
+
+Arbitrary binary data, as well as normal ASCII strings, are allowed.
+The data base is stored in two files.
+One file is a directory containing a bit map and has `.dir' as its suffix.
+The second file contains all data and has `.pag' as its suffix.
+<P>
+
+Before a database can be accessed, it must be opened by
+<I>dbm_open</I>.
+
+This will open and/or create the files
+<I>file</I><B>.dir</B>
+
+and
+<I>file</I><B>.pag</B>
+
+depending on the flags parameter (see
+<I><A HREF="http://localhost/cgi-bin/man/man2html?2+open">open</A></I>(2)).
+
+<P>
+
+Once open, the data stored under a key is accessed by
+<I>dbm_fetch</I>
+
+and data is placed under a key by
+<I>dbm_store</I>.
+
+The
+<I>flags</I>
+
+field can be either
+<B>DBM_INSERT</B>
+
+or
+<B>DBM_REPLACE.</B>
+
+<B>DBM_INSERT</B>
+
+will only insert new entries into the database and will not
+change an existing entry with the same key.
+<B>DBM_REPLACE</B>
+
+will replace an existing entry if it has the same key.
+A key (and its associated contents) is deleted by
+<I>dbm_delete</I>.
+
+A linear pass through all keys in a database may be made,
+in an (apparently) random order, by use of
+<I>dbm_firstkey</I>
+
+and
+<I>dbm_nextkey</I>.
+
+<I>Dbm_firstkey</I>
+
+will return the first key in the database.
+<I>Dbm_nextkey</I>
+
+will return the next key in the database.
+This code will traverse the data base:
+<DL COMPACT>
+<DT><DD>
+<B>for</B>
+
+(key = dbm_firstkey(db); key.dptr != NULL; key = dbm_nextkey(db))
+</DL>
+<P>
+
+<I>Dbm_error</I>
+
+returns non-zero when an error has occurred reading or writing the database.
+<I>Dbm_clearerr</I>
+
+resets the error condition on the named database.
+<A NAME="lbAE">&nbsp;</A>
+<H2>DIAGNOSTICS</H2>
+
+All functions that return an
+<I>int</I>
+
+indicate errors with negative values.  A zero return indicates ok.
+Routines that return a
+<I>datum</I>
+
+indicate errors with a null (0)
+<I>dptr.</I>
+
+If
+<I>dbm_store</I>
+
+called with a
+<I>flags</I>
+
+value of
+<B>DBM_INSERT</B>
+
+finds an existing entry with the same key
+it returns 1.
+<A NAME="lbAF">&nbsp;</A>
+<H2>BUGS</H2>
+
+The `.pag' file will contain holes so that its apparent size is about
+four times its actual content.  Older UNIX systems may create real
+file blocks for these holes when touched.  These files cannot be copied
+by normal means (cp, cat, tp, tar, ar) without filling in the holes.
+<P>
+
+<I>Dptr</I>
+
+pointers returned by these subroutines point into static storage
+that is changed by subsequent calls.
+<P>
+
+The sum of the sizes of a key/content pair must not exceed
+the internal block size (currently 4096 bytes).
+Moreover all key/content pairs that hash together must fit on a single block.
+<I>Dbm_store</I>
+
+will return an error in the event that a disk block fills with inseparable data.
+<P>
+
+<I>Dbm_delete</I>
+
+does not physically reclaim file space,
+although it does make it available for reuse.
+<P>
+
+The order of keys presented by
+<I>dbm_firstkey</I>
+
+and
+<I>dbm_nextkey</I>
+
+depends on a hashing function, not on anything interesting.
+<A NAME="lbAG">&nbsp;</A>
+<H2>SEE ALSO</H2>
+
+<A HREF="http://localhost/cgi-bin/man/man2html?3X+dbm">dbm</A>(3X)
+<P>
+
+<HR>
+<A NAME="index">&nbsp;</A><H2>Index</H2>
+<DL>
+<DT><A HREF="#lbAB">NAME</A><DD>
+<DT><A HREF="#lbAC">SYNOPSIS</A><DD>
+<DT><A HREF="#lbAD">DESCRIPTION</A><DD>
+<DT><A HREF="#lbAE">DIAGNOSTICS</A><DD>
+<DT><A HREF="#lbAF">BUGS</A><DD>
+<DT><A HREF="#lbAG">SEE ALSO</A><DD>
+</DL>
+<HR>
+This document was created by
+<A HREF="http://localhost/cgi-bin/man/man2html">man2html</A>,
+using the manual pages.<BR>
+Time:  GMT, January 01, 2004
+</BODY>
+</HTML>
