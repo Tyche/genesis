@@ -41,7 +41,7 @@ void func_anticipate_assignment(void) {
     pc=caller_frame->pc;
 
     /* Most of this is from anticipate_assignment() */
-    
+
     /* skip error handling */
     while ((opcode = caller_frame->opcodes[pc]) == CRITICAL_END)
 	pc++;

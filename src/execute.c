@@ -45,7 +45,7 @@ void clear_debug(void);
 cData debug;
 
 VMState *suspended = NULL, *preempted = NULL, *vmstore = NULL;
-VMStack *stack_store = NULL, *holder_cache = NULL; 
+VMStack *stack_store = NULL, *holder_cache = NULL;
 
 #define    call_error(_err_) { call_environ = _err_; return CALL_ERROR; }
 
@@ -85,7 +85,7 @@ void store_stack(void) {
     } else {
         holder = EMALLOC(VMStack, 1);
     }
-  
+
     holder->stack = stack;
     holder->stack_size = stack_size;
 
@@ -477,7 +477,7 @@ void vm_pause(void) {
     vm->preempted = YES;
     ADD_VM_TASK(preempted, vm);
     init_execute();
-    cur_frame = NULL;  
+    cur_frame = NULL;
 }
 
 /*
@@ -516,21 +516,21 @@ cList * vm_list(void) {
     cList  * r;
     cData    elem;
     VMState * vm;
-  
+
     r = list_new(0);
-  
+
     elem.type = INTEGER;
 
     for (vm = suspended; vm; vm = vm->next) {
         elem.u.val = vm->task_id;
-        r = list_add(r, &elem); 
+        r = list_add(r, &elem);
     }
-  
+
     for (vm = preempted; vm; vm = vm->next) {
         elem.u.val = vm->task_id;
-        r = list_add(r, &elem); 
+        r = list_add(r, &elem);
     }
-  
+
     return r;
 }
 
@@ -542,7 +542,7 @@ cList * vm_stack(void) {
     cData   d,
            * list;
     Frame  * f;
-  
+
     r = list_new(0);
     d.type = LIST;
     for (f = cur_frame; f; f = f->caller_frame) {
@@ -574,13 +574,13 @@ cList * vm_stack(void) {
 void init_execute(void) {
     if (stack_store) {
         VMStack *holder;
-        
+
         stack = stack_store->stack;
         stack_size = stack_store->stack_size;
-    
+
         arg_starts = stack_store->arg_starts;
         arg_size = stack_store->arg_size;
-    
+
         holder = stack_store;
         stack_store = holder->next;
         holder->next = holder_cache;
@@ -593,7 +593,7 @@ void init_execute(void) {
     } else {
         stack = EMALLOC(cData, STACK_STARTING_SIZE);
         stack_size = STACK_STARTING_SIZE;
-    
+
         arg_starts = EMALLOC(Int, ARG_STACK_STARTING_SIZE);
         arg_size = ARG_STACK_STARTING_SIZE;
 
@@ -781,8 +781,8 @@ Int frame_start(Obj * obj,
 #ifdef DRIVER_DEBUG
     if (debug.u.val > 0) {
       Int parms;
-      cList *list;  
-      cData d; 
+      cList *list;
+      cData d;
 
       parms = (debug.u.val == 2 ||
                (debug.u.val >= 4 &&
@@ -810,7 +810,7 @@ Int frame_start(Obj * obj,
 
       if (parms) {
           cList *l;
-          Int i; 
+          Int i;
 
           l = list_new(1);
           for (i = arg_start; i < stack_pos - method->num_vars; i++)
@@ -824,7 +824,7 @@ Int frame_start(Obj * obj,
       d.u.list = list;
       debug.u.list = list_add(debug.u.list, &d);
       list_discard(list);
-    }           
+    }
 #endif
 
     return CALL_OK;
@@ -840,16 +840,16 @@ void frame_return(void) {
 #ifdef DRIVER_DEBUG
     if (debug.u.val > 0) {
       cData d;
-    
+
       if (debug.type == LIST) {
           /* We skip the case when there hasn't been any calls yet,
              That's to prefent the other routine from getting confused */
           d.type = INTEGER;
           d.u.val = tick;
           debug.u.list = list_add (debug.u.list, &d);
-      }   
-    }     
-#endif    
+      }
+    }
+#endif
 
     /* Free old data on stack. */
     for (i = cur_frame->stack_start; i < stack_pos; i++)
@@ -857,7 +857,7 @@ void frame_return(void) {
     stack_pos = cur_frame->stack_start;
 
     /* Let go of method and objects. */
-    
+
 #ifdef REF_COUNT_DEBUG
     /* Check if any of the objects lost their refcounts */
     if (count_stack_refs(cur_frame->method->object->objnum) >
@@ -905,12 +905,12 @@ Long prof_ops[LAST_TOKEN];
 void update_execute_opcode(Int opcode) {
     register Int x;
     static short init = 1;
-        
+
     if (init) {
         for (x=0; x < LAST_TOKEN; x++)
             prof_ops[x] = 0;
         init = 0;
-    }       
+    }
 
     prof_ops[opcode]++;
 }
@@ -1642,7 +1642,7 @@ INTERNAL void out_of_ticks_error(void)
     /* Don't give the topmost frame a chance to return. */
     method = method_dup(cur_frame->method);
     frame_return();
-  
+
     if (!explanation)
         explanation = string_from_chars("Out of ticks", 12);
     start_error(methoderr_id, explanation, NULL, location);
@@ -1839,7 +1839,7 @@ INTERNAL cList * traceback_add(cList * traceback, Ident error)
 }
 
 void pop_error_action_specifier(void)
-{ 
+{
     Error_action_specifier *old;
 
     /* Pop the first error action specifier off that stack. */
@@ -1897,29 +1897,29 @@ void bind_opcode(Int opcode, cObjnum objnum) {
 
 /* ------------------------------------------------------ */
 #ifdef DRIVER_DEBUG
-void init_debug(void) {     
+void init_debug(void) {
     debug.type = INTEGER;
     debug.u.val = 0;
-}   
+}
 
-void clear_debug(void) {   
+void clear_debug(void) {
     data_discard(&debug);
     init_debug();
-}     
-          
-void start_debug(void) {         
+}
+
+void start_debug(void) {
     data_discard(&debug);
     debug.type = INTEGER;
     debug.u.val=1;
-}   
-              
-void start_full_debug(void) {         
+}
+
+void start_full_debug(void) {
     data_discard(&debug);
     debug.type = INTEGER;
     debug.u.val=2;
-}   
+}
 
-void get_debug(cData *d) { 
+void get_debug(cData *d) {
     data_dup(d, &debug);
 }
 #endif

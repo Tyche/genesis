@@ -183,7 +183,7 @@ extern char *sys_errlist[];
 #  ifdef UTS      /* what is UTS, need documentation -- BJG */
 #    define bool int
 #  else
-#    define bool char 
+#    define bool char
 #  endif
 #endif
 
@@ -252,7 +252,7 @@ typedef bool              Bool;
 # define MAX_UINT 4294967295U
 #elif SIZEOF_LONG == 4
   typedef long              Int;
-  typedef unsigned long     uInt; 
+  typedef unsigned long     uInt;
 # define MAX_INT  2147483647L
 # define MIN_INT  (- MAX_INT - 1)
 # define MAX_UINT 4294967295UL
@@ -475,7 +475,7 @@ extern Int  heartbeat_freq;
 extern Int cache_width;
 extern Int cache_depth;
 
-extern void init_defs(void); 
+extern void init_defs(void);
 
 /* limits configurable with 'config()' */
 extern Int  limit_datasize;
