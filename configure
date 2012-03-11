@@ -2272,7 +2272,7 @@ for ac_lib in gdbm gdbm_compat ndbm db; do
 #include <$db_header_to_use>
 int main() { return 0; }
 int t() {
-dbm_open(NULL, NULL, NULL)
+dbm_open(0, 0, 0)
 ; return 0; }
 EOF
     if eval $ac_link; then
