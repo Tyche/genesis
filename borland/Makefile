@@ -44,7 +44,7 @@ STATIC_CFLAGS = -tWR
 
 # Compiler directives
 MACRO_CFLAGS = -DWIN32 -DWIN32_LEAN_AND_MEAN -D_NO_VCL  
-CFLAGS = $(STATIC_CFLAGS) -tWC -q -w-pia $(DEBUG_CFLAGS) -$(PROCESSOR_LEVEL) $(MACRO_CFLAGS)
+CFLAGS = $(STATIC_CFLAGS) -tWC -q -w-pia $(DEBUG_CFLAGS) -6 $(MACRO_CFLAGS)
 
 # Linker directives for debugging
 !ifdef DEBUG
@@ -83,7 +83,7 @@ OPS_OBJ   = $(DO)\operators.obj $(DO)\buffer.obj $(DO)\error.obj $(DO)\list.obj 
 DM      = $(SD)\modules
 MOD_OBJ = $(DM)\cdc.obj $(DM)\cdc_buffer.obj $(DM)\cdc_dict.obj $(DM)\cdc_list.obj \
           $(DM)\cdc_misc.obj $(DM)\cdc_string.obj $(DM)\cdc_integer.obj $(DM)\web.obj \
-          $(DM)\ext_math.obj
+          $(DM)\ext_math.obj $(DM)\veil.obj
 GRM_OBJ = $(SD)\grammar.obj
 DB_OBJ   = $(SD)\cache.obj $(SD)\binarydb.obj $(SD)\dbpack.obj \
            $(SD)\decode.obj $(SD)\lookup.obj
@@ -130,7 +130,7 @@ clean:
   -@del $(PARSER_SRC) $(DRIVER_OBJ) $(COMPILER_OBJ) 2>NUL
   -@del $(NDBM_LIB) $(NDBM_OBJ) 2>NUL
   -@del $(DRIVER) $(COMPILER) 2>NUL
-  -@del *.tds *.tmp 2>NUL
+  -@del *.tds *.tmp *.map 2>NUL
   -@del y.tab.* 2>NUL
 
 # Clean up the products of the configure.bat script
@@ -150,7 +150,7 @@ install: $(DRIVER) $(COMPILER)
   @echo Installation directory not defined use - make -DINSTDIR=C:\mydir install
 !endif
 
-# Install the genesis driver and coldcc compiler to the supplied directory  
+# Run the regression tests 
 test: $(DRIVER) $(COMPILER) 
   @runtests.bat
 
@@ -177,3 +177,30 @@ $(SD)\regexp.obj: $(SD)\regexp.c
 $(DM)\ext_math.obj: $(DM)\ext_math.c
   $(CC) $(CFLAGS) $(COLDINCDIRS) $(BCCINCDIRS) -c -n$(@D) $(DM)\ext_math.c
 
+# remove coldc net.h and io.h headers from search for ndbm compile
+$(DN)\ndbm.obj: $(DN)\ndbm.c
+  $(CC) $(CFLAGS) $(BCCINCDIRS) $(NDBMINCDIRS) -c -n$(@D) $(DN)\ndbm.c
+
+# remove coldc net.h and io.h headers from search for ndbm compile
+$(DN)\hash.obj: $(DN)\hash.c
+  $(CC) $(CFLAGS) $(BCCINCDIRS) $(NDBMINCDIRS) -c -n$(@D) $(DN)\hash.c
+
+# remove coldc net.h and io.h headers from search for ndbm compile
+$(DN)\hash_buf.obj: $(DN)\hash_buf.c
+  $(CC) $(CFLAGS) $(BCCINCDIRS) $(NDBMINCDIRS) -c -n$(@D) $(DN)\hash_buf.c
+
+# remove coldc net.h and io.h headers from search for ndbm compile
+$(DN)\hash_page.obj: $(DN)\hash_page.c
+  $(CC) $(CFLAGS) $(BCCINCDIRS) $(NDBMINCDIRS) -c -n$(@D) $(DN)\hash_page.c
+
+# remove coldc net.h and io.h headers from search for ndbm compile
+$(DN)\hash_bigkey.obj: $(DN)\hash_bigkey.c
+  $(CC) $(CFLAGS) $(BCCINCDIRS) $(NDBMINCDIRS) -c -n$(@D) $(DN)\hash_bigkey.c
+
+# remove coldc net.h and io.h headers from search for ndbm compile
+$(DN)\hash_log2.obj: $(DN)\hash_log2.c
+  $(CC) $(CFLAGS) $(BCCINCDIRS) $(NDBMINCDIRS) -c -n$(@D) $(DN)\hash_log2.c
+
+# remove coldc net.h and io.h headers from search for ndbm compile
+$(DN)\hash_func.obj: $(DN)\hash_func.c
+  $(CC) $(CFLAGS) $(BCCINCDIRS) $(NDBMINCDIRS) -c -n$(@D) $(DN)\hash_func.c
