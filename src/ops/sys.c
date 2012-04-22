@@ -13,6 +13,10 @@
 #include <dirent.h>  /* directory funcs */
 #ifdef __MSVC__
 #include <direct.h>
+#include <io.h>
+#endif
+#ifdef __BORLANDC__
+#include <io.h>
 #endif
 #include "cache.h"
 #include "execute.h"
@@ -64,22 +68,22 @@ INTERNAL Bool backup_file(char * file) {
     strcat(dest, ".bak/");
     strcat(dest, file);
 
-    from_fd = open(source, O_RDONLY | O_BINARY, 0);
+	from_fd = open(source, O_RDONLY | O_BINARY, 0);
     if (from_fd == F_FAILURE)
         x_THROW(source)
 
-#ifdef __MSVC__
-    to_fd = open(dest, (O_WRONLY|O_TRUNC|O_CREAT|O_BINARY), (_S_IREAD|_S_IWRITE));
+#if defined __MSVC__ || defined __BORLANDC__
+	to_fd = open(dest, (O_WRONLY|O_TRUNC|O_CREAT|O_BINARY), (_S_IREAD|_S_IWRITE));
 #else
     to_fd = open(dest, (O_WRONLY|O_TRUNC|O_CREAT|O_BINARY), (S_IRUSR|S_IWUSR));
 #endif
     if (to_fd == F_FAILURE)
         x_THROW(dest)
 
-    while ((rcount = read(from_fd, buf, MAXBSIZE)) > 0) {
-        wcount = write(to_fd, buf, rcount);
+	while ((rcount = read(from_fd, buf, MAXBSIZE)) > 0) {
+		wcount = write(to_fd, buf, rcount);
         if (rcount != wcount) {
-            cthrow(file_id, "Error on copying %s to %s", source, dest);
+			cthrow(file_id, "Error on copying %s to %s", source, dest);
             rval = FALSE;
             break;
         } else if (wcount == F_FAILURE) {
@@ -105,7 +109,7 @@ INTERNAL Bool backup_file(char * file) {
 
 void func_backup(void) {
     char            buf[BUF];
-    struct stat     statbuf;
+	struct stat     statbuf;
     struct dirent * dent;
     DIR           * dp;
 
@@ -120,7 +124,7 @@ void func_backup(void) {
     strcpy(buf, c_dir_binary);
     strcat(buf, ".bak");
     if (stat(buf, &statbuf) == F_FAILURE) {
-#ifdef __MSVC__
+#if defined __MSVC__ || defined __BORLANDC__
         if (mkdir(buf) == F_FAILURE)
 #else
         if (mkdir(buf, READ_WRITE_EXECUTE) == F_FAILURE)
@@ -129,8 +133,8 @@ void func_backup(void) {
     } else if (!S_ISDIR(statbuf.st_mode)) {
         if (unlink(buf) == F_FAILURE)
             THROW((file_id, "Cannot delete file \"%s\": %s", buf, strerror(GETERR())))
-#ifdef __MSVC__
-        if (mkdir(buf) == F_FAILURE)
+#if defined __MSVC__ || defined __BORLANDC__
+		if (mkdir(buf) == F_FAILURE)
 #else
         if (mkdir(buf, READ_WRITE_EXECUTE) == F_FAILURE)
 #endif
@@ -141,7 +145,7 @@ void func_backup(void) {
     cache_sync();
 
     /* copy the index files and '.clean' */
-    dp = opendir(c_dir_binary); 
+    dp = opendir(c_dir_binary);
     /* if this failed, then this backup can't complete. die. */
     if (dp == NULL) {
         write_err("ERROR: error in backup: %s: %s", c_dir_binary, strerror(GETERR()));
@@ -213,10 +217,10 @@ COLDC_FUNC(set_heartbeat) {
 // -----------------------------------------------------------------
 
  * Datasize limit (example: 1024K)
- * Task forking limit (for instance, 20. Each time a task forks, each 
+ * Task forking limit (for instance, 20. Each time a task forks, each
    child gets only a half of this quota)
  * Recursion depth (good default: 128)
- * Object swapping (a task can't swap an object from disk-db more than 
+ * Object swapping (a task can't swap an object from disk-db more than
    (for example) 16 times before calling pause() and preempting)
    (we might be able to do away with swap limit with Genesis 2.0, as
    we'll go multithreaded then, and it'll be much harder to lag the server)

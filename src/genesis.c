@@ -192,7 +192,9 @@ INTERNAL void initialize(Int argc, char **argv) {
              * buf = NULL;
     FILE     * fp;
     Bool       dofork = YES;
+#ifdef __UNIX__
     pid_t      pid;
+#endif
 
     name = *argv;
     argv++;

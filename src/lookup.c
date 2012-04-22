@@ -127,8 +127,8 @@ Long lookup_first_objnum(void)
     key = dbm_firstkey(dbp);
     if (key.dptr == NULL)
 	return INV_OBJNUM;
-    if (key.dsize > 1 && *key.dptr == 0)
-	return atoln(key.dptr + 1, key.dsize - 1);
+    if (key.dsize > 1 && *(char*)(key.dptr) == 0)
+	return atoln((char*)key.dptr + 1, key.dsize - 1);
     return lookup_next_objnum();
 }
 
@@ -139,8 +139,8 @@ Long lookup_next_objnum(void)
     key = dbm_nextkey(dbp);
     if (key.dptr == NULL)
 	return NOT_AN_IDENT;
-    if (key.dsize > 1 && *key.dptr == 0)
-	return atoln(key.dptr + 1, key.dsize - 1);
+    if (key.dsize > 1 && *(char*)(key.dptr) == 0)
+	return atoln((char*)key.dptr + 1, key.dsize - 1);
     return lookup_next_objnum();
 }
 
@@ -233,7 +233,7 @@ Long lookup_first_name(void)
     key = dbm_firstkey(dbp);
     if (key.dptr == NULL)
 	return NOT_AN_IDENT;
-    if (key.dsize == 1 || *key.dptr != 0)
+    if (key.dsize == 1 || *(char*)(key.dptr) != 0)
 	return ident_get(key.dptr);
     return lookup_next_name();
 }
@@ -245,7 +245,7 @@ Long lookup_next_name(void)
     key = dbm_nextkey(dbp);
     if (key.dptr == NULL)
 	return NOT_AN_IDENT;
-    if (key.dsize == 1 || *key.dptr != 0)
+    if (key.dsize == 1 || *(char*)(key.dptr) != 0)
 	return ident_get(key.dptr);
     return lookup_next_name();
 }

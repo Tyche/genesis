@@ -271,7 +271,7 @@ regexp * gen_regcomp(char * exp) {
             longest = NULL;
             len = 0;
             for (; scan != NULL; scan = regnext(scan))
-                if (OP(scan) == EXACTLY && strlen(OPERAND(scan)) >= len) {
+                if (OP(scan) == EXACTLY && strlen(OPERAND(scan)) >= (size_t)len) {
                     longest = OPERAND(scan);
                     len = strlen(OPERAND(scan));
                 }

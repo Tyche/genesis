@@ -357,10 +357,22 @@ typedef bool              Bool;
 #define S_ISDIR(mode) (mode & _S_IFDIR)
 #endif
 
-/* incase it doesn't exist */
-#ifndef O_BINARY
-#define O_BINARY 0
+#if defined _MSC_VER
+#define unlink _unlink
+#define mkdir _mkdir
+#define getpid _getpid
+#define close _close
+#define open _open
+#define read _read
+#define write _write
+#define rmdir _rmdir
+#define lseek _lseek
 #endif
+
+/* incase it doesn't exist */
+//#ifndef O_BINARY
+//#define O_BINARY 0
+//#endif
 
 /*
 // --------------------------------------------------------------------

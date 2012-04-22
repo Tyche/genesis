@@ -34,14 +34,10 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-static char sccsid[] = "@(#)hash.c	8.9 (Berkeley) 6/16/94";
-#endif /* LIBC_SCCS and not lint */
 
-/*
-#include <sys/param.h>
-*/
+#ifdef WIN32
 #include <io.h>
+#endif
 #include <sys/stat.h>
 
 
@@ -50,36 +46,35 @@ static char sccsid[] = "@(#)hash.c	8.9 (Berkeley) 6/16/94";
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-/*
+#ifndef WIN32
 #include <unistd.h>
-*/
-#include <io.h>
+#endif
 #ifdef DEBUG
 #include <assert.h>
 #endif
 
-#include <db.h>
+#include "db.h"
 #include "hash.h"
 #include "page.h"
 #include "extern.h"
 
-static int   alloc_segs __P((HTAB *, int));
-static int   flush_meta __P((HTAB *));
-static int   hash_access __P((HTAB *, ACTION, DBT *, DBT *));
-static int   hash_close __P((DB *));
-static int   hash_delete __P((const DB *, const DBT *, u_int32_t));
-static int   hash_fd __P((const DB *));
-static int   hash_get __P((const DB *, const DBT *, DBT *, u_int32_t));
-static int   hash_put __P((const DB *, DBT *, const DBT *, u_int32_t));
-static void *hash_realloc __P((SEGMENT **, int, int));
-static int   hash_seq __P((const DB *, DBT *, DBT *, u_int32_t));
-static int   hash_sync __P((const DB *, u_int32_t));
-static int   hdestroy __P((HTAB *));
-static HTAB *init_hash __P((HTAB *, const char *, HASHINFO *));
-static int   init_htab __P((HTAB *, int));
+static int   alloc_segs (HTAB *, int);
+static int   flush_meta (HTAB *);
+static int   hash_access (HTAB *, ACTION, DBT *, DBT *);
+static int   hash_close (DB *);
+static int   hash_delete (const DB *, const DBT *, uint32_t);
+static int   hash_fd (const DB *);
+static int   hash_get (const DB *, const DBT *, DBT *, uint32_t);
+static int   hash_put (const DB *, DBT *, const DBT *, uint32_t);
+static void *hash_realloc (SEGMENT **, int, int);
+static int   hash_seq (const DB *, DBT *, DBT *, uint32_t);
+static int   hash_sync (const DB *, uint32_t);
+static int   hdestroy (HTAB *);
+static HTAB *init_hash (HTAB *, const char *, HASHINFO *);
+static int   init_htab (HTAB *, int);
 #if BYTE_ORDER == LITTLE_ENDIAN
-static void  swap_header __P((HTAB *));
-static void  swap_header_copy __P((HASHHDR *, HASHHDR *));
+static void  swap_header (HTAB *);
+static void  swap_header_copy (HASHHDR *, HASHHDR *);
 #endif
 
 /* Fast arithmetic, relying on powers of 2, */
@@ -100,10 +95,7 @@ int hash_accesses, hash_collisions, hash_expansions, hash_overflows;
 /* OPEN/CLOSE */
 
 extern DB *
-__hash_open(file, flags, mode, info, dflags)
-	const char *file;
-	int flags, mode, dflags;
-	const HASHINFO *info;	/* Special directives for create */
+__hash_open(const char *file, int flags, int mode, const HASHINFO * info)
 {
 	HTAB *hashp;
   struct stat statbuf;
@@ -137,8 +129,11 @@ __hash_open(file, flags, mode, info, dflags)
 	if (file) {
 		if ((hashp->fp = open(file, flags, mode)) == -1)
 			RETURN_ERROR(errno, error0);
-		/* (void)fcntl(hashp->fp, F_SETFD, 1); this should call SetHandleInformation
-		  on Windows with HANDLE_FLAG_INHERIT flag)*/
+#ifndef WIN32
+		(void)fcntl(hashp->fp, F_SETFD, 1);
+#else
+//        SetHandleInformation(hashp->fp,HANDLE_FLAG_INHERIT,0);
+#endif
 	}
 	if (new_table) {
 		if (!(hashp = init_hash(hashp, file, (HASHINFO *)info)))
@@ -156,7 +151,7 @@ __hash_open(file, flags, mode, info, dflags)
 #endif
 		if (hdrsize == -1)
 			RETURN_ERROR(errno, error1);
-		if (hdrsize != sizeof(HASHHDR))
+		if (hdrsize != (int)sizeof(HASHHDR))
 			RETURN_ERROR(EFTYPE, error1);
 		/* Verify file type, versions and hash function */
 		if (hashp->MAGIC != HASHMAGIC)
@@ -187,7 +182,7 @@ __hash_open(file, flags, mode, info, dflags)
 		    (hashp->BSHIFT + BYTE_SHIFT);
 
 		hashp->nmaps = bpages;
-		(void)memset(&hashp->mapp[0], 0, bpages * sizeof(u_int32_t *));
+		(void)memset(&hashp->mapp[0], 0, bpages * sizeof(uint32_t *));
 	}
 
 	/* Initialize Buffer Manager */
@@ -249,9 +244,7 @@ error0:
 	return (NULL);
 }
 
-static int
-hash_close(dbp)
-	DB *dbp;
+static int hash_close(DB *dbp)
 {
 	HTAB *hashp;
 	int retval;
@@ -265,9 +258,7 @@ hash_close(dbp)
 	return (retval);
 }
 
-static int
-hash_fd(dbp)
-	const DB *dbp;
+static int hash_fd(const DB *dbp)
 {
 	HTAB *hashp;
 
@@ -283,11 +274,7 @@ hash_fd(dbp)
 }
 
 /************************** LOCAL CREATION ROUTINES **********************/
-static HTAB *
-init_hash(hashp, file, info)
-	HTAB *hashp;
-	const char *file;
-	HASHINFO *info;
+static HTAB * init_hash(HTAB *hashp, const char *file, HASHINFO *info)
 {
 	struct stat statbuf;
 	int nelem;
@@ -309,8 +296,11 @@ init_hash(hashp, file, info)
 	if (file != NULL) {
   if (stat(file, &statbuf))
 			return (NULL);
-/*		hashp->BSIZE = statbuf.st_blksize; */
+#ifdef WIN32
 		hashp->BSIZE = 4096;
+#else
+		hashp->BSIZE = statbuf.st_blksize;
+#endif
 		hashp->BSHIFT = __log2(hashp->BSIZE);
 	}
 
@@ -351,10 +341,7 @@ init_hash(hashp, file, info)
  *
  * Returns 0 on No Error
  */
-static int
-init_htab(hashp, nelem)
-	HTAB *hashp;
-	int nelem;
+static int init_htab(HTAB *hashp, int nelem)
 {
 	register int nbuckets, nsegs;
 	int l2;
@@ -397,9 +384,7 @@ init_htab(hashp, nelem)
  * Flushes any changes to the file if necessary and destroys the hashp
  * structure, freeing all allocated space.
  */
-static int
-hdestroy(hashp)
-	HTAB *hashp;
+static int hdestroy(HTAB *hashp)
 {
 	int i, save_errno;
 
@@ -457,10 +442,7 @@ hdestroy(hashp)
  *	 0 == OK
  *	-1 ERROR
  */
-static int
-hash_sync(dbp, flags)
-	const DB *dbp;
-	u_int32_t flags;
+static int hash_sync(const DB *dbp, uint32_t flags)
 {
 	HTAB *hashp;
 
@@ -486,9 +468,7 @@ hash_sync(dbp, flags)
  *	 0 == OK
  *	-1 indicates that errno should be set
  */
-static int
-flush_meta(hashp)
-	HTAB *hashp;
+static int flush_meta(HTAB *hashp)
 {
 	HASHHDR *whdrp;
 #if BYTE_ORDER == LITTLE_ENDIAN
@@ -512,7 +492,7 @@ flush_meta(hashp)
 	    ((wsize = write(fp, whdrp, sizeof(HASHHDR))) == -1))
 		return (-1);
 	else
-		if (wsize != sizeof(HASHHDR)) {
+		if (wsize != (int)sizeof(HASHHDR)) {
 			errno = EFTYPE;
 			hashp->db_errno = errno;
 			return (-1);
@@ -534,12 +514,7 @@ flush_meta(hashp)
  *	 1 to indicate an external ERROR (i.e. key not found, etc)
  *	-1 to indicate an internal ERROR (i.e. out of memory, etc)
  */
-static int
-hash_get(dbp, key, data, flag)
-	const DB *dbp;
-	const DBT *key;
-	DBT *data;
-	u_int32_t flag;
+static int hash_get(const DB *dbp, const DBT *key, DBT *data, uint32_t flag)
 {
 	HTAB *hashp;
 
@@ -551,12 +526,7 @@ hash_get(dbp, key, data, flag)
 	return (hash_access(hashp, HASH_GET, (DBT *)key, data));
 }
 
-static int
-hash_put(dbp, key, data, flag)
-	const DB *dbp;
-	DBT *key;
-	const DBT *data;
-	u_int32_t flag;
+static int hash_put(const DB *dbp, DBT *key, const DBT *data, uint32_t flag)
 {
 	HTAB *hashp;
 
@@ -573,11 +543,7 @@ hash_put(dbp, key, data, flag)
 	    HASH_PUTNEW : HASH_PUT, (DBT *)key, (DBT *)data));
 }
 
-static int
-hash_delete(dbp, key, flag)
-	const DB *dbp;
-	const DBT *key;
-	u_int32_t flag;		/* Ignored */
+static int hash_delete(const DB *dbp, const DBT *key, uint32_t flag)
 {
 	HTAB *hashp;
 
@@ -596,18 +562,14 @@ hash_delete(dbp, key, flag)
 /*
  * Assume that hashp has been set in wrapper routine.
  */
-static int
-hash_access(hashp, action, key, val)
-	HTAB *hashp;
-	ACTION action;
-	DBT *key, *val;
+static int hash_access(HTAB *hashp, ACTION action, DBT *key, DBT *val)
 {
 	register BUFHEAD *rbufp;
 	BUFHEAD *bufp, *save_bufp;
-	register u_int16_t *bp;
+	register uint16_t *bp;
 	register int n, ndx, off, size;
 	register char *kp;
-	u_int16_t pageno;
+	uint16_t pageno;
 
 #ifdef HASH_STATISTICS
 	hash_accesses++;
@@ -623,7 +585,7 @@ hash_access(hashp, action, key, val)
 
 	/* Pin the bucket chain */
 	rbufp->flags |= BUF_PIN;
-	for (bp = (u_int16_t *)rbufp->page, n = *bp++, ndx = 1; ndx < n;)
+	for (bp = (uint16_t *)rbufp->page, n = *bp++, ndx = 1; ndx < n;)
 		if (bp[1] >= REAL_KEY) {
 			/* Real key/data pair */
 			if (size == off - *bp &&
@@ -642,13 +604,12 @@ hash_access(hashp, action, key, val)
 				return (ERROR);
 			}
 			/* FOR LOOP INIT */
-			bp = (u_int16_t *)rbufp->page;
+			bp = (uint16_t *)rbufp->page;
 			n = *bp++;
 			ndx = 1;
 			off = hashp->BSIZE;
 		} else if (bp[1] < REAL_KEY) {
-			if ((ndx =
-			    __find_bigpair(hashp, rbufp, ndx, kp, size)) > 0)
+			if ((ndx = __find_bigpair(hashp, rbufp, ndx, kp, size)) > 0)
 				goto found;
 			if (ndx == -2) {
 				bufp = rbufp;
@@ -664,7 +625,7 @@ hash_access(hashp, action, key, val)
 					return (ERROR);
 				}
 				/* FOR LOOP INIT */
-				bp = (u_int16_t *)rbufp->page;
+				bp = (uint16_t *)rbufp->page;
 				n = *bp++;
 				ndx = 1;
 				off = hashp->BSIZE;
@@ -698,12 +659,12 @@ found:
 		save_bufp->flags &= ~BUF_PIN;
 		return (ABNORMAL);
 	case HASH_GET:
-		bp = (u_int16_t *)rbufp->page;
+		bp = (uint16_t *)rbufp->page;
 		if (bp[ndx + 1] < REAL_KEY) {
 			if (__big_return(hashp, rbufp, ndx, val, 0))
 				return (ERROR);
 		} else {
-			val->data = (u_char *)rbufp->page + (int)bp[ndx + 1];
+			val->data = (uint8_t *)rbufp->page + (int)bp[ndx + 1];
 			val->size = bp[ndx] - bp[ndx + 1];
 		}
 		break;
@@ -725,16 +686,12 @@ found:
 	return (SUCCESS);
 }
 
-static int
-hash_seq(dbp, key, data, flag)
-	const DB *dbp;
-	DBT *key, *data;
-	u_int32_t flag;
+static int hash_seq(const DB *dbp, DBT *key, DBT *data, uint32_t flag)
 {
-	register u_int32_t bucket;
+	register int bucket;
 	register BUFHEAD *bufp;
 	HTAB *hashp;
-	u_int16_t *bp, ndx;
+	uint16_t *bp, ndx;
 
 	hashp = (HTAB *)dbp->internal;
 	if (flag && flag != R_FIRST && flag != R_NEXT) {
@@ -759,7 +716,7 @@ hash_seq(dbp, key, data, flag)
 				if (!bufp)
 					return (ERROR);
 				hashp->cpage = bufp;
-				bp = (u_int16_t *)bufp->page;
+				bp = (uint16_t *)bufp->page;
 				if (bp[0])
 					break;
 			}
@@ -769,7 +726,7 @@ hash_seq(dbp, key, data, flag)
 				return (ABNORMAL);
 			}
 		} else
-			bp = (u_int16_t *)hashp->cpage->page;
+			bp = (uint16_t *)hashp->cpage->page;
 
 #ifdef DEBUG
 		assert(bp);
@@ -780,7 +737,7 @@ hash_seq(dbp, key, data, flag)
 			    __get_buf(hashp, bp[hashp->cndx], bufp, 0);
 			if (!bufp)
 				return (ERROR);
-			bp = (u_int16_t *)(bufp->page);
+			bp = (uint16_t *)(bufp->page);
 			hashp->cndx = 1;
 		}
 		if (!bp[0]) {
@@ -793,9 +750,9 @@ hash_seq(dbp, key, data, flag)
 		if (__big_keydata(hashp, bufp, key, data, 1))
 			return (ERROR);
 	} else {
-		key->data = (u_char *)hashp->cpage->page + bp[ndx];
+		key->data = (uint8_t *)hashp->cpage->page + bp[ndx];
 		key->size = (ndx > 1 ? bp[ndx - 1] : hashp->BSIZE) - bp[ndx];
-		data->data = (u_char *)hashp->cpage->page + bp[ndx + 1];
+		data->data = (uint8_t *)hashp->cpage->page + bp[ndx + 1];
 		data->size = bp[ndx] - bp[ndx + 1];
 		ndx += 2;
 		if (ndx > bp[0]) {
@@ -815,11 +772,9 @@ hash_seq(dbp, key, data, flag)
  *	 0 ==> OK
  *	-1 ==> Error
  */
-extern int
-__expand_table(hashp)
-	HTAB *hashp;
+extern int __expand_table(HTAB *hashp)
 {
-	u_int32_t old_bucket, new_bucket;
+	int old_bucket, new_bucket;
 	int dirsize, new_segnum, spare_ndx;
 
 #ifdef HASH_STATISTICS
@@ -870,10 +825,7 @@ __expand_table(hashp)
  * If realloc guarantees that the pointer is not destroyed if the realloc
  * fails, then this routine can go away.
  */
-static void *
-hash_realloc(p_ptr, oldsize, newsize)
-	SEGMENT **p_ptr;
-	int oldsize, newsize;
+static void * hash_realloc(SEGMENT **p_ptr, int oldsize, int newsize)
 {
 	register void *p;
 
@@ -886,11 +838,7 @@ hash_realloc(p_ptr, oldsize, newsize)
 	return (p);
 }
 
-extern u_int32_t
-__call_hash(hashp, k, len)
-	HTAB *hashp;
-	char *k;
-	int len;
+extern uint32_t __call_hash(HTAB *hashp, char *k, int len)
 {
 	int n, bucket;
 
@@ -906,10 +854,7 @@ __call_hash(hashp, k, len)
  *
  * Returns 0 on success
  */
-static int
-alloc_segs(hashp, nsegs)
-	HTAB *hashp;
-	int nsegs;
+static int alloc_segs(HTAB *hashp, int nsegs)
 {
 	register int i;
 	register SEGMENT store;
@@ -940,9 +885,7 @@ alloc_segs(hashp, nsegs)
 /*
  * Hashp->hdr needs to be byteswapped.
  */
-static void
-swap_header_copy(srcp, destp)
-	HASHHDR *srcp, *destp;
+static void swap_header_copy(HASHHDR *srcp, HASHHDR *destp)
 {
 	int i;
 
@@ -969,9 +912,7 @@ swap_header_copy(srcp, destp)
 	}
 }
 
-static void
-swap_header(hashp)
-	HTAB *hashp;
+static void swap_header(HTAB *hashp)
 {
 	HASHHDR *hdrp;
 	int i;

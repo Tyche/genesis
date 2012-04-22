@@ -22,41 +22,32 @@ NATIVE_METHOD(strftime) {
     char        s[LINE];
     char      * fmt;
     time_t      tt;
-    struct tm * t;
+	struct tm * t;
 
-    INIT_1_OR_2_ARGS(STRING, INTEGER);
+	INIT_1_OR_2_ARGS(STRING, INTEGER);
 
-    if (STR1->len == 0) {
-        s[0] = '\0';
-        CLEAN_RETURN_STRING(string_from_chars(s, 0));
-    }
+	if (STR1->len == 0) {
+		s[0] = '\0';
+		CLEAN_RETURN_STRING(string_from_chars(s, 0));
+	}
 
-#ifdef __BORLANDC__
-    if (argc == 2) {
-        if (INT2 < 18000) {
-            THROW((type_id,
-         "Borland's time util is broken, and requires time values above 18000"))
-        }
-        tt = (time_t) INT2;
-    } else {
-        tt = time(NULL);
-    }
-#else
-    tt = ((argc == 2) ? (time_t) INT2 : time(NULL));
-#endif
-    t  = localtime(&tt);
+	tt = ((argc == 2) ? (time_t) INT2 : time(NULL));
+	t  = localtime(&tt);
+	if (t == NULL) {
+	  THROW((type_id, "Time value out of range"))
+	}
 
-    fmt = string_chars(STR1);
+	fmt = string_chars(STR1);
 
-    /* some OS's are weird and do odd things when you end in %
-       (accidentally or no) */
-    if (fmt[strlen(fmt)] == '%')
-        fmt[strlen(fmt)] = (char) NULL;
+	/* some OS's are weird and do odd things when you end in %
+	   (accidentally or no) */
+	if (fmt[strlen(fmt)] == '%')
+		fmt[strlen(fmt)] = (char) NULL;
 
-    if (FTIME(s, LINE, fmt, t) == (size_t) 0)
-       THROW((range_id,"Format results in a string longer than 80 characters."))
+	if (FTIME(s, LINE, fmt, t) == (size_t) 0)
+	   THROW((range_id,"Format results in a string longer than 80 characters."))
 
-    CLEAN_RETURN_STRING(string_from_chars(s, strlen(s)));
+	CLEAN_RETURN_STRING(string_from_chars(s, strlen(s)));
 }
 
 NATIVE_METHOD(next_objnum) {

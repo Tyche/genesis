@@ -19,6 +19,7 @@
 
 #ifdef __MSVC__
 #include <process.h>
+#include <io.h>
 #endif
 
 #define FORMAT_BUF_INITIAL_LENGTH 48

@@ -293,9 +293,9 @@ void verify_native_methods(void) {
         native = &natives[x];
 
         /* if they didn't define it right, ignore it */
-        if ((strlen(native->bindobj) == 0) || (strlen(native->name) == 0))  
+        if ((strlen(native->bindobj) == 0) || (strlen(native->name) == 0))
             continue;
-  
+
         /* get the object name */
         name = ident_get(native->bindobj);
         if (name == NOT_AN_IDENT)
@@ -305,7 +305,7 @@ void verify_native_methods(void) {
         objnum = INV_OBJNUM;
         lookup_retrieve_name(name, &objnum);
         ident_discard(name);
-  
+
         /* die? */
         if (objnum == INV_OBJNUM) {
             if (print_warn)
@@ -934,7 +934,7 @@ INTERNAL void handle_bind_nativecmd(FILE * fp, char * s) {
     NEXT_WORD(s);
 
     s += get_method_name(s, &meth);
-    
+
     if (nat.str[0] == (char) NULL || meth.str[0] == (char) NULL)
         DIE("Invalid method name in bind_native directive.\n")
 
@@ -998,7 +998,7 @@ INTERNAL void handle_methcmd(FILE * fp, char * s, Int new, Int access) {
         p++;
 
         while (*p != (char) NULL && running) {
-            NEXT_WORD(p);   
+            NEXT_WORD(p);
             if (!strnccmp(p, "nooverride", 10)) {
                 p += 10;
                 flags |= MF_NOOVER;
@@ -1424,7 +1424,7 @@ void dump_object(Long objnum, FILE *fp, Bool objnames) {
 
     /* grab the parents list */
     objs = list_dup(obj->parents);
-    cache_discard(obj); 
+    cache_discard(obj);
 
     /* first dump any parents which haven't already been dumped. */
     if (list_length(objs) != 0) {
@@ -1636,7 +1636,7 @@ void blank_and_print_obj(char * what, Obj * obj) {
     if (obj->objname == NOT_AN_IDENT) {
         sn = long_to_ascii(obj->objnum, nbuf);
         fputc('#', stdout);
-    } else {  
+    } else {
         sn = ident_name(obj->objname);
         fputc('$', stdout);
     }

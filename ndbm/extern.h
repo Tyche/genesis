@@ -1,9 +1,6 @@
 /*-
- * Copyright (c) 1990, 1993
+ * Copyright (c) 1991, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
- *
- * This code is derived from software contributed to Berkeley by
- * Margo Seltzer.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,45 +30,36 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)ndbm.h	8.1 (Berkeley) 6/2/93
+ *	@(#)extern.h	8.4 (Berkeley) 6/16/94
  */
 
-#ifndef _NDBM_H_
-#define	_NDBM_H_
+BUFHEAD	*__add_ovflpage (HTAB *, BUFHEAD *);
+int	 __addel (HTAB *, BUFHEAD *, const DBT *, const DBT *);
+int	 __big_delete (HTAB *, BUFHEAD *);
+int	 __big_insert (HTAB *, BUFHEAD *, const DBT *, const DBT *);
+int	 __big_keydata (HTAB *, BUFHEAD *, DBT *, DBT *, int);
+int	 __big_return (HTAB *, BUFHEAD *, int, DBT *, int);
+int	 __big_split (HTAB *, BUFHEAD *, BUFHEAD *, BUFHEAD *,
+		int, uint32_t, SPLIT_RETURN *);
+int	 __buf_free (HTAB *, int, int);
+void	 __buf_init (HTAB *, int);
+uint32_t	 __call_hash (HTAB *, char *, int);
+int	 __delpair (HTAB *, BUFHEAD *, int);
+int	 __expand_table (HTAB *);
+int	 __find_bigpair (HTAB *, BUFHEAD *, int, char *, int);
+uint16_t	 __find_last_page (HTAB *, BUFHEAD **);
+void	 __free_ovflpage (HTAB *, BUFHEAD *);
+BUFHEAD	*__get_buf (HTAB *, uint32_t, BUFHEAD *, int);
+int	 __get_page (HTAB *, char *, uint32_t, int, int, int);
+int	 __ibitmap (HTAB *, int, int, int);
+uint32_t	 __log2 (uint32_t);
+int	 __put_page (HTAB *, char *, uint32_t, int, int);
+void	 __reclaim_buf (HTAB *, BUFHEAD *);
+int	 __split_page (HTAB *, uint32_t, uint32_t);
 
-#include <db.h>
+/* Default hash routine. */
+extern uint32_t (*__default_hash) (const void *, size_t);
 
-/* Map dbm interface onto db(3). */
-#define DBM_RDONLY	O_RDONLY
-
-/* Flags to dbm_store(). */
-#define DBM_INSERT      0
-#define DBM_REPLACE     1
-
-/*
- * The db(3) support for ndbm(3) always appends this suffix to the
- * file name to avoid overwriting the user's original database.
- */
-#define	DBM_SUFFIX	".db"
-
-typedef struct {
-	char *dptr;
-	int dsize;
-} datum;
-
-typedef DB DBM;
-#define	dbm_pagfno(a)	DBM_PAGFNO_NOT_AVAILABLE
-
-__BEGIN_DECLS
-void	 dbm_close __P((DBM *));
-int	 dbm_delete __P((DBM *, datum));
-datum	 dbm_fetch __P((DBM *, datum));
-datum	 dbm_firstkey __P((DBM *));
-long	 dbm_forder __P((DBM *, datum));
-datum	 dbm_nextkey __P((DBM *));
-DBM	*dbm_open __P((const char *, int, int));
-int	 dbm_store __P((DBM *, datum, datum, int));
-int	 dbm_dirfno __P((DBM *));
-__END_DECLS
-
-#endif /* !_NDBM_H_ */
+#ifdef HASH_STATISTICS
+extern int hash_accesses, hash_collisions, hash_expansions, hash_overflows;
+#endif

@@ -34,9 +34,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-static char sccsid[] = "@(#)hash_buf.c	8.5 (Berkeley) 7/15/94";
-#endif /* LIBC_SCCS and not lint */
 
 /*
  * PACKAGE: hash
@@ -53,25 +50,24 @@ static char sccsid[] = "@(#)hash_buf.c	8.5 (Berkeley) 7/15/94";
  * Internal
  *	newbuf
  */
-/*
-#include <sys/param.h>
-*/
+#ifdef WIN32
+#include <io.h>
+#endif
 #include <errno.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <io.h>
 
 #ifdef DEBUG
 #include <assert.h>
 #endif
 
-#include <db.h>
+#include "db.h"
 #include "hash.h"
 #include "page.h"
 #include "extern.h"
 
-static BUFHEAD *newbuf __P((HTAB *, u_int32_t, BUFHEAD *));
+static BUFHEAD *newbuf (HTAB *, uint32_t, BUFHEAD *);
 
 /* Unlink B from its place in the lru */
 #define BUF_REMOVE(B) { \
@@ -102,17 +98,13 @@ static BUFHEAD *newbuf __P((HTAB *, u_int32_t, BUFHEAD *));
  * be valid.  Therefore, you must always verify that its address matches the
  * address you are seeking.
  */
-extern BUFHEAD *
-__get_buf(hashp, addr, prev_bp, newpage)
-	HTAB *hashp;
-	u_int32_t addr;
-	BUFHEAD *prev_bp;
-	int newpage;	/* If prev_bp set, indicates a new overflow page. */
+extern BUFHEAD * __get_buf(HTAB *hashp, uint32_t addr, BUFHEAD *prev_bp, int newpage)
+	/* newpage - If prev_bp set, indicates a new overflow page. */
 {
 	register BUFHEAD *bp;
-	register u_int32_t is_disk_mask;
-	register int is_disk, segment_ndx;
-	SEGMENT segp;
+	register uint32_t is_disk_mask;
+	register int is_disk, segment_ndx = 0;
+	SEGMENT segp = NULL;
 
 	is_disk = 0;
 	is_disk_mask = 0;
@@ -157,18 +149,14 @@ __get_buf(hashp, addr, prev_bp, newpage)
  *
  * If newbuf finds an error (returning NULL), it also sets errno.
  */
-static BUFHEAD *
-newbuf(hashp, addr, prev_bp)
-	HTAB *hashp;
-	u_int32_t addr;
-	BUFHEAD *prev_bp;
+static BUFHEAD * newbuf(HTAB *hashp, uint32_t addr, BUFHEAD *prev_bp)
 {
 	register BUFHEAD *bp;		/* The buffer we're going to use */
 	register BUFHEAD *xbp;		/* Temp pointer */
 	register BUFHEAD *next_xbp;
 	SEGMENT segp;
 	int segment_ndx;
-	u_int16_t oaddr, *shortp;
+	uint16_t oaddr, *shortp;
 
 	oaddr = 0;
 	bp = LRU;
@@ -204,7 +192,7 @@ newbuf(hashp, addr, prev_bp)
 			 * Set oaddr before __put_page so that you get it
 			 * before bytes are swapped.
 			 */
-			shortp = (u_int16_t *)bp->page;
+			shortp = (uint16_t *)bp->page;
 			if (shortp[0])
 				oaddr = shortp[shortp[0] - 1];
 			if ((bp->flags & BUF_MOD) && __put_page(hashp, bp->page,
@@ -247,7 +235,7 @@ newbuf(hashp, addr, prev_bp)
 				    (oaddr != xbp->addr))
 					break;
 
-				shortp = (u_int16_t *)xbp->page;
+				shortp = (uint16_t *)xbp->page;
 				if (shortp[0])
 					/* set before __put_page */
 					oaddr = shortp[shortp[0] - 1];
@@ -287,10 +275,7 @@ newbuf(hashp, addr, prev_bp)
 	return (bp);
 }
 
-extern void
-__buf_init(hashp, nbytes)
-	HTAB *hashp;
-	int nbytes;
+extern void __buf_init(HTAB *hashp, int nbytes)
 {
 	BUFHEAD *bfp;
 	int npages;
@@ -312,10 +297,7 @@ __buf_init(hashp, nbytes)
 	 */
 }
 
-extern int
-__buf_free(hashp, do_free, to_disk)
-	HTAB *hashp;
-	int do_free, to_disk;
+extern int __buf_free(HTAB *hashp, int do_free, int to_disk)
 {
 	BUFHEAD *bp;
 
@@ -343,10 +325,7 @@ __buf_free(hashp, do_free, to_disk)
 	return (0);
 }
 
-extern void
-__reclaim_buf(hashp, bp)
-	HTAB *hashp;
-	BUFHEAD *bp;
+extern void __reclaim_buf(HTAB *hashp, BUFHEAD *bp)
 {
 	bp->ovfl = 0;
 	bp->addr = 0;

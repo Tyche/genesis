@@ -97,14 +97,10 @@ void func_localtime(void) {
     } else
         time(&t);
 
-#ifdef __BORLANDC__
-    if (t < 18000) {
-        THROW((type_id,
-     "Borland's time util is broken, and requires time values above 18000"))
-    }
-#endif
-
-    tms = localtime(&t);
+	tms = localtime(&t);
+	if (tms == NULL) {
+		THROW((type_id, "Time value out of range"))
+	}
 
     l = list_new(12);
     d = list_empty_spaces(l, 12);
@@ -196,16 +192,12 @@ void func_ctime(void) {
 
     tval = (num_args) ? args[0].u.val : time(NULL);
 
-#ifdef __BORLANDC__
-    if (tval < 18000) {
-        pop(num_args);
-        THROW((type_id,
-     "Borland's time util is broken, and requires time values above 18000"))
-    }
-#endif
-
-    timestr = ctime(&tval);
-    str = string_from_chars(timestr, 24);
+	timestr = ctime(&tval);
+	if (timestr == NULL) {
+		pop(num_args);
+		THROW((type_id, "Time value out of range"))
+	}
+	str = string_from_chars(timestr, 24);
 
     pop(num_args);
     push_string(str);

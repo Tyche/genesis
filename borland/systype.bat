@@ -3,9 +3,9 @@ echo Building system type configuration information...
 setlocal enableextensions
 set SYSINC=%CD%\systype.h
 set SYSCFG=%CD%\systype.cfg
-set CPU=i%PROCESSOR_LEVEL%86
+set CPU=i686
 set VENDOR=pc
-set SYSTEM=bcc55win32
+set SYSTEM=bcc63win32
 >  %SYSINC% echo #ifndef cdc_systype_h
 >> %SYSINC% echo #define cdc_systype_h
 >> %SYSINC% echo #define SYSTEM_TYPE "%CPU%-%VENDOR%-%SYSTEM%"

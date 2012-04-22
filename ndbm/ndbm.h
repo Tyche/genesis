@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 1990, 1993, 1994
+ * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
@@ -32,23 +32,51 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
+ *
+ *	@(#)ndbm.h	8.1 (Berkeley) 6/2/93
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-static char sccsid[] = "@(#)hash_log2.c	8.2 (Berkeley) 5/31/94";
-#endif /* LIBC_SCCS and not lint */
+#ifndef _NDBM_H_
+#define	_NDBM_H_
 
-#include <sys/types.h>
+#include "db.h"
 
-#include <db.h>
+/* Map dbm interface onto db(3). */
+#define DBM_RDONLY	O_RDONLY
 
-u_int32_t
-__log2(num)
-	u_int32_t num;
-{
-	register u_int32_t i, limit;
+/* Flags to dbm_store(). */
+#define DBM_INSERT      0
+#define DBM_REPLACE     1
 
-	limit = 1;
-	for (i = 0; limit < num; limit = limit << 1, i++);
-	return (i);
-}
+/*
+ * The db(3) support for ndbm(3) always appends this suffix to the
+ * file name to avoid overwriting the user's original database.
+ */
+#define	DBM_SUFFIX	".db"
+
+typedef struct {
+	void *dptr;
+	size_t dsize;
+} datum;
+
+typedef DB DBM;
+#define	dbm_pagfno(a)	DBM_PAGFNO_NOT_AVAILABLE
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+void	 dbm_close (DBM *);
+int	 dbm_delete (DBM *, datum);
+datum	 dbm_fetch (DBM *, datum);
+datum	 dbm_firstkey (DBM *);
+datum	 dbm_nextkey (DBM *);
+DBM	*dbm_open (const char *, int, mode_t);
+int	 dbm_store (DBM *, datum, datum, int);
+int	 dbm_dirfno (DBM *);
+int dbm_error(DBM *db);
+int dbm_clearerr(DBM *db);
+#if defined(__cplusplus)
+};
+#endif
+
+#endif /* !_NDBM_H_ */

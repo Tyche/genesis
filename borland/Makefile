@@ -23,6 +23,7 @@ AR = $(BCCROOT)\bin\tlib
 DSTDIR = ..
 # The distribution source directory
 SD  = $(DSTDIR)\src
+DN  = $(DSTDIR)\ndbm
  
 # Include directories 
 BCCINCDIRS = -I$(BCCROOT)\include
@@ -65,7 +66,6 @@ LIBS      = import32.lib cw32i.lib ws2_32.lib
 BCC32STARTUP = c0x32.obj
 
 # ndbm parts
-DN      = ndbm
 NDBM_OBJ = $(DN)\ndbm.obj $(DN)\hash.obj $(DN)\hash_buf.obj $(DN)\hash_page.obj \
            $(DN)\hash_bigkey.obj $(DN)\hash_log2.obj $(DN)\hash_func.obj 
 NDBM_LIB = $(DN)\ndbm.lib
