@@ -1,0 +1,96 @@
+﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+		<PropertyGroup>
+			<ProjectGuid>{00461B33-7190-4C14-90D7-71B4E29AAF22}</ProjectGuid>
+		</PropertyGroup>
+		<ItemGroup>
+			<Projects Include="ndbm.cbproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="modules.cbproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="data.cbproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="ops.cbproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="coldcc.cbproj">
+				<Dependencies>ndbm.cbproj;modules.cbproj;data.cbproj;ops.cbproj</Dependencies>
+			</Projects>
+			<Projects Include="genesis.cbproj">
+				<Dependencies>ndbm.cbproj;modules.cbproj;data.cbproj;ops.cbproj</Dependencies>
+			</Projects>
+		</ItemGroup>
+		<ProjectExtensions>
+			<Borland.Personality>Default.Personality.12</Borland.Personality>
+			<Borland.ProjectType/>
+			<BorlandProject>
+				<Default.Personality/>
+			</BorlandProject>
+		</ProjectExtensions>
+		<Target Name="ndbm">
+			<MSBuild Projects="ndbm.cbproj"/>
+		</Target>
+		<Target Name="ndbm:Clean">
+			<MSBuild Projects="ndbm.cbproj" Targets="Clean"/>
+		</Target>
+		<Target Name="ndbm:Make">
+			<MSBuild Projects="ndbm.cbproj" Targets="Make"/>
+		</Target>
+		<Target Name="modules">
+			<MSBuild Projects="modules.cbproj"/>
+		</Target>
+		<Target Name="modules:Clean">
+			<MSBuild Projects="modules.cbproj" Targets="Clean"/>
+		</Target>
+		<Target Name="modules:Make">
+			<MSBuild Projects="modules.cbproj" Targets="Make"/>
+		</Target>
+		<Target Name="data">
+			<MSBuild Projects="data.cbproj"/>
+		</Target>
+		<Target Name="data:Clean">
+			<MSBuild Projects="data.cbproj" Targets="Clean"/>
+		</Target>
+		<Target Name="data:Make">
+			<MSBuild Projects="data.cbproj" Targets="Make"/>
+		</Target>
+		<Target Name="ops">
+			<MSBuild Projects="ops.cbproj"/>
+		</Target>
+		<Target Name="ops:Clean">
+			<MSBuild Projects="ops.cbproj" Targets="Clean"/>
+		</Target>
+		<Target Name="ops:Make">
+			<MSBuild Projects="ops.cbproj" Targets="Make"/>
+		</Target>
+		<Target Name="coldcc" DependsOnTargets="ndbm;modules;data;ops">
+			<MSBuild Projects="coldcc.cbproj"/>
+		</Target>
+		<Target Name="coldcc:Clean" DependsOnTargets="ndbm:Clean;modules:Clean;data:Clean;ops:Clean">
+			<MSBuild Projects="coldcc.cbproj" Targets="Clean"/>
+		</Target>
+		<Target Name="coldcc:Make" DependsOnTargets="ndbm:Make;modules:Make;data:Make;ops:Make">
+			<MSBuild Projects="coldcc.cbproj" Targets="Make"/>
+		</Target>
+		<Target Name="genesis" DependsOnTargets="ndbm;modules;data;ops">
+			<MSBuild Projects="genesis.cbproj"/>
+		</Target>
+		<Target Name="genesis:Clean" DependsOnTargets="ndbm:Clean;modules:Clean;data:Clean;ops:Clean">
+			<MSBuild Projects="genesis.cbproj" Targets="Clean"/>
+		</Target>
+		<Target Name="genesis:Make" DependsOnTargets="ndbm:Make;modules:Make;data:Make;ops:Make">
+			<MSBuild Projects="genesis.cbproj" Targets="Make"/>
+		</Target>
+		<Target Name="Build">
+			<CallTarget Targets="ndbm;modules;data;ops;coldcc;genesis"/>
+		</Target>
+		<Target Name="Clean">
+			<CallTarget Targets="ndbm:Clean;modules:Clean;data:Clean;ops:Clean;coldcc:Clean;genesis:Clean"/>
+		</Target>
+		<Target Name="Make">
+			<CallTarget Targets="ndbm:Make;modules:Make;data:Make;ops:Make;coldcc:Make;genesis:Make"/>
+		</Target>
+		<Import Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')" Project="$(BDS)\Bin\CodeGear.Group.Targets"/>
+	</Project>
