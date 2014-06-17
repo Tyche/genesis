@@ -253,8 +253,8 @@ static BUFHEAD * newbuf(HTAB *hashp, uint32_t addr, BUFHEAD *prev_bp)
 	/* Now assign this buffer */
 	bp->addr = addr;
 #ifdef DEBUG1
-	(void)fprintf(stderr, "NEWBUF1: %d->ovfl was %d is now %d\n",
-	    bp->addr, (bp->ovfl ? bp->ovfl->addr : 0), 0);
+	fprintf(stderr,"NEWBUF1: %d->ovfl was %d is now %d\n",
+		bp->addr, (bp->ovfl ? bp->ovfl->addr : 0), 0);
 #endif
 	bp->ovfl = NULL;
 	if (prev_bp) {
@@ -263,8 +263,8 @@ static BUFHEAD * newbuf(HTAB *hashp, uint32_t addr, BUFHEAD *prev_bp)
 		 * the buffer overflow links.
 		 */
 #ifdef DEBUG1
-		(void)fprintf(stderr, "NEWBUF2: %d->ovfl was %d is now %d\n",
-		    prev_bp->addr, (prev_bp->ovfl ? bp->ovfl->addr : 0),
+		fprintf(stderr, "NEWBUF2: %d->ovfl was %d is now %d\n",
+			prev_bp->addr, (prev_bp->ovfl ? bp->ovfl->addr : 0),
 		    (bp ? bp->addr : 0));
 #endif
 		prev_bp->ovfl = bp;

@@ -563,7 +563,7 @@ extern int __big_split(HTAB *hashp, BUFHEAD *op, BUFHEAD *np, BUFHEAD *big_keyp,
 
 	tmpp->flags |= BUF_MOD;
 #ifdef DEBUG1
-	(void)fprintf(stderr,
+	fprintf(stderr,
 	    "BIG_SPLIT: %d->ovfl was %d is now %d\n", tmpp->addr,
 	    (tmpp->ovfl ? tmpp->ovfl->addr : 0), (bp ? bp->addr : 0));
 #endif

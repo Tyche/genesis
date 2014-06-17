@@ -245,8 +245,8 @@ extern int __split_page(HTAB *hashp, uint32_t obucket, uint32_t nbucket)
 	OFFSET(ino) = copyto;
 
 #ifdef DEBUG3
-	(void)fprintf(stderr, "split %d/%d\n",
-	    ((uint16_t *)np)[0] / 2,
+	fprintf(stderr, "split %d/%d\n",
+		((uint16_t *)np)[0] / 2,
 	    ((uint16_t *)op)[0] / 2);
 #endif
 	/* unpin both pages */
@@ -354,7 +354,7 @@ static int ugly_split(HTAB * hashp, uint32_t obucket, BUFHEAD * old_bufp, BUFHEA
 					putpair((char *)op, &key, &val);
 				else {
 					old_bufp =
-					    __add_ovflpage(hashp, old_bufp);
+						__add_ovflpage(hashp, old_bufp);
 					if (!old_bufp)
 						return (-1);
 					op = (uint16_t *)old_bufp->page;
@@ -477,8 +477,8 @@ extern BUFHEAD * __add_ovflpage(HTAB *hashp, BUFHEAD *bufp)
 		return (NULL);
 	bufp->ovfl->flags |= BUF_MOD;
 #ifdef DEBUG1
-	(void)fprintf(stderr, "ADDOVFLPAGE: %d->ovfl was %d is now %d\n",
-	    tmp1, tmp2, bufp->ovfl->addr);
+	fprintf(stderr, "ADDOVFLPAGE: %d->ovfl was %d is now %d\n",
+		tmp1, tmp2, bufp->ovfl->addr);
 #endif
 	ndx = sp[0];
 	/*
@@ -653,7 +653,7 @@ static uint16_t overflow_page(HTAB *hashp)
 	first_page = hashp->LAST_FREED >>(hashp->BSHIFT + BYTE_SHIFT);
 	for ( i = first_page; i <= free_page; i++ ) {
 		if (!(freep = (uint32_t *)hashp->mapp[i]) &&
-		    !(freep = fetch_bitmap(hashp, i)))
+			!(freep = fetch_bitmap(hashp, i)))
 			return (0);
 		if (i == free_page)
 			in_use_bits = free_bit;
@@ -662,7 +662,7 @@ static uint16_t overflow_page(HTAB *hashp)
 
 		if (i == first_page) {
 			bit = hashp->LAST_FREED &
-			    ((hashp->BSIZE << BYTE_SHIFT) - 1);
+				((hashp->BSIZE << BYTE_SHIFT) - 1);
 			j = bit / BITS_PER_MAP;
 			bit = bit & ~(BITS_PER_MAP - 1);
 		} else {
@@ -678,12 +678,12 @@ static uint16_t overflow_page(HTAB *hashp)
 	hashp->LAST_FREED = hashp->SPARES[splitnum];
 	hashp->SPARES[splitnum]++;
 	offset = hashp->SPARES[splitnum] -
-	    (splitnum ? hashp->SPARES[splitnum - 1] : 0);
+		(splitnum ? hashp->SPARES[splitnum - 1] : 0);
 
 #define	OVMSG	"HASH: Out of overflow pages.  Increase page size\n"
 	if (offset > SPLITMASK) {
 		if (++splitnum >= NCACHED) {
-			write(STDERR_FILENO, OVMSG, sizeof(OVMSG) - 1);
+			fprintf(stderr, OVMSG);
 			return (0);
 		}
 		hashp->OVFL_POINT = splitnum;
@@ -696,7 +696,7 @@ static uint16_t overflow_page(HTAB *hashp)
 	if (free_bit == (hashp->BSIZE << BYTE_SHIFT) - 1) {
 		free_page++;
 		if (free_page >= NCACHED) {
-			write(STDERR_FILENO, OVMSG, sizeof(OVMSG) - 1);
+			fprintf(stderr, OVMSG);
 			return (0);
 		}
 		/*
@@ -711,7 +711,7 @@ static uint16_t overflow_page(HTAB *hashp)
 		 * in the first place.
 		 */
 		if (__ibitmap(hashp,
-		    (int)OADDR_OF(splitnum, offset), 1, free_page))
+			(int)OADDR_OF(splitnum, offset), 1, free_page))
 			return (0);
 		hashp->SPARES[splitnum]++;
 #ifdef DEBUG2
@@ -720,7 +720,7 @@ static uint16_t overflow_page(HTAB *hashp)
 		offset++;
 		if (offset > SPLITMASK) {
 			if (++splitnum >= NCACHED) {
-				write(STDERR_FILENO, OVMSG, sizeof(OVMSG) - 1);
+				fprintf(stderr, OVMSG);
 				return (0);
 			}
 			hashp->OVFL_POINT = splitnum;
@@ -740,8 +740,8 @@ static uint16_t overflow_page(HTAB *hashp)
 	/* Calculate address of the new overflow page */
 	addr = (uint16_t)OADDR_OF(splitnum, offset);
 #ifdef DEBUG2
-	(void)fprintf(stderr, "OVERFLOW_PAGE: ADDR: %d BIT: %d PAGE %d\n",
-	    addr, free_bit, free_page);
+	fprintf(stderr, "OVERFLOW_PAGE: ADDR: %d BIT: %d PAGE %d\n",
+		addr, free_bit, free_page);
 #endif
 	return (addr);
 
@@ -768,8 +768,8 @@ found:
 		return (0);	/* Out of overflow pages */
 	addr = (uint16_t)OADDR_OF(i, offset);
 #ifdef DEBUG2
-	(void)fprintf(stderr, "OVERFLOW_PAGE: ADDR: %d BIT: %d PAGE %d\n",
-	    addr, tmp1, tmp2);
+	fprintf(stderr, "OVERFLOW_PAGE: ADDR: %d BIT: %d PAGE %d\n",
+		addr, tmp1, tmp2);
 #endif
 
 	/* Allocate and return the overflow page */
@@ -788,11 +788,11 @@ extern void __free_ovflpage(HTAB *hashp, BUFHEAD *obufp)
 
 	addr = obufp->addr;
 #ifdef DEBUG1
-	(void)fprintf(stderr, "Freeing %d\n", addr);
+	fprintf(stderr, "Freeing %d\n", addr);
 #endif
 	ndx = (((uint16_t)addr) >> SPLITSHIFT);
 	bit_address =
-	    (ndx ? hashp->SPARES[ndx - 1] : 0) + (addr & SPLITMASK) - 1;
+		(ndx ? hashp->SPARES[ndx - 1] : 0) + (addr & SPLITMASK) - 1;
 	 if (bit_address < hashp->LAST_FREED)
 		hashp->LAST_FREED = bit_address;
 	free_page = (bit_address >> (hashp->BSHIFT + BYTE_SHIFT));
@@ -811,8 +811,8 @@ extern void __free_ovflpage(HTAB *hashp, BUFHEAD *obufp)
 #endif
 	CLRBIT(freep, free_bit);
 #ifdef DEBUG2
-	(void)fprintf(stderr, "FREE_OVFLPAGE: ADDR: %d BIT: %d PAGE %d\n",
-	    obufp->addr, free_bit, free_page);
+	fprintf(stderr, "FREE_OVFLPAGE: ADDR: %d BIT: %d PAGE %d\n",
+		obufp->addr, free_bit, free_page);
 #endif
 	__reclaim_buf(hashp, obufp);
 }
@@ -895,27 +895,6 @@ static uint32_t * fetch_bitmap(HTAB *hashp, int ndx)
 	}
 	return (hashp->mapp[ndx]);
 }
-
-#ifdef DEBUG4
-int print_chain(int addr)
-{
-	BUFHEAD *bufp;
-	short *bp, oaddr;
-
-	(void)fprintf(stderr, "%d ", addr);
-	bufp = __get_buf(hashp, addr, NULL, 0);
-	bp = (short *)bufp->page;
-	while (bp[0] && ((bp[bp[0]] == OVFLPAGE) ||
-		((bp[0] > 2) && bp[2] < REAL_KEY))) {
-		oaddr = bp[bp[0] - 1];
-		(void)fprintf(stderr, "%d ", (int)oaddr);
-		bufp = __get_buf(hashp, (int)oaddr, bufp, 0);
-		bp = (short *)bufp->page;
-	}
-	(void)fprintf(stderr, "\n");
-}
-#endif
-
 
 int mkstemp(char *path)
 {

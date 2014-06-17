@@ -211,7 +211,7 @@ __hash_open(const char *file, int flags, int mode, const HASHINFO * info)
 	dbp->type = DB_HASH;
 
 #ifdef DEBUG
-	(void)fprintf(stderr,
+	fprintf(stderr,
 "%s\n%s%x\n%s%d\n%s%d\n%s%d\n%s%d\n%s%d\n%s%d\n%s%d\n%s%d\n%s%d\n%s%x\n%s%x\n%s%d\n%s%d\n",
 	    "init_htab:",
 	    "TABLE POINTER   ", hashp,
@@ -391,18 +391,17 @@ static int hdestroy(HTAB *hashp)
 	save_errno = 0;
 
 #ifdef HASH_STATISTICS
-	(void)fprintf(stderr, "hdestroy: accesses %ld collisions %ld\n",
-	    hash_accesses, hash_collisions);
-	(void)fprintf(stderr, "hdestroy: expansions %ld\n",
-	    hash_expansions);
-	(void)fprintf(stderr, "hdestroy: overflows %ld\n",
-	    hash_overflows);
-	(void)fprintf(stderr, "keys %ld maxp %d segmentcount %d\n",
-	    hashp->NKEYS, hashp->MAX_BUCKET, hashp->nsegs);
+	fprintf(stderr,"hdestroy: accesses %ld collisions %ld\n",
+		hash_accesses, hash_collisions);
+	fprintf(stderr,"hdestroy: expansions %ld\n",
+		hash_expansions);
+	fprintf(stderr,"hdestroy: overflows %ld\n",
+		hash_overflows);
+	fprintf(stderr,"keys %ld maxp %d segmentcount %d\n",
+		hashp->NKEYS, hashp->MAX_BUCKET, hashp->nsegs);
 
 	for (i = 0; i < NCACHED; i++)
-		(void)fprintf(stderr,
-		    "spares[%d] = %d\n", i, hashp->SPARES[i]);
+		fprintf(stderr,"spares[%d] = %d\n", i, hashp->SPARES[i]);
 #endif
 	/*
 	 * Call on buffer manager to free buffers, and if required,
@@ -870,7 +869,7 @@ static int alloc_segs(HTAB *hashp, int nsegs)
 	}
 	/* Allocate segments */
 	if ((store =
-	    (SEGMENT)calloc(nsegs << hashp->SSHIFT, sizeof(SEGMENT))) == NULL) {
+		(SEGMENT)calloc(nsegs << hashp->SSHIFT, sizeof(SEGMENT))) == NULL) {
 		save_errno = errno;
 		(void)hdestroy(hashp);
 		errno = save_errno;

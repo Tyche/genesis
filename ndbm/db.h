@@ -89,17 +89,11 @@ typedef int mode_t;
 #ifndef BYTE_ORDER
 #define	LITTLE_ENDIAN	1234		/* LSB first: i386, vax */
 #define	BIG_ENDIAN	4321		/* MSB first: 68000, ibm, net */
-#define	BYTE_ORDER	BIG_ENDIAN	/* Set for your system. */
+#define	BYTE_ORDER	LITTLE_ENDIAN	/* Set for your system. */
 #endif
 
 #ifndef EFTYPE
 #define	EFTYPE		EINVAL		/* POSIX 1003.1 format errno. */
-#endif
-
-#ifndef	STDERR_FILENO
-#define	STDIN_FILENO	0		/* ANSI C #defines */
-#define	STDOUT_FILENO	1
-#define	STDERR_FILENO	2
 #endif
 
 #ifndef	MAX				/* Usually found in <sys/param.h>. */
