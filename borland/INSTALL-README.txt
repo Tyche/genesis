@@ -1,3 +1,32 @@
+Installation instructions for Embarcadero C++ Buidler 10.3 Community Edition for Windws 10
+
+Required software:
+ Embarcadero C++ 10.3 compiler - see https://www.embarcadero.com/products/cbuilder/starter
+ Yacc - see http://gnuwin32.sourceforge.net/packages/byacc.htm
+
+Instructions:
+
+1) Install yacc - the yacc.exe should be in the path or placed in this directory
+2) switch to this directory 
+   ex. cd C:\genesis\borland
+   Note: This directory must be installed under the Genesis distribution directory
+3) run the configure batch file
+   configure
+4) run the parse batch file to build the parser with yacc
+   parse
+5) Open the genesis-coldc.groupproj file in Embarcadero Builder
+6) Select "build all projects" on the Project tab
+7) The executables will be found in the ..\borland\Debug\Win32 directory 
+
+The support scripts cannot be executed unless you install a Windows version of Perl, like
+ActiveState Perl.
+
+11/07/20
+Jon Lambert 
+   
+
+===================================================================================
+
 Installation instructions for Windows NT/2K/XP using the Borland C++ v5.5 compiler.
 
 Required software:
@@ -46,6 +75,5 @@ ActiveState Perl.
 
 01/04/03
 Jon Lambert 
-jlsysinc@alltel.net
 
    
