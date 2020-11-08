@@ -9,18 +9,16 @@
 #include "native.h"
 
 #include "cdc.h"
-#include "veil.h"
-#include "web.h"
 #include "ext_math.h"
+#include "web.h"
 
-#define NUM_MODULES 4
+#define NUM_MODULES 3
 
 #ifdef _native_
 module_t * cold_modules[] = {
     &cdc_module,
-    &veil_module,
-    &web_module,
     &ext_math_module,
+    &web_module,
 };
 #endif
 
@@ -80,24 +78,22 @@ module_t * cold_modules[] = {
 #define NATIVE_INTEGER_SHLEFT 53
 #define NATIVE_INTEGER_SHRIGHT 54
 #define NATIVE_INTEGER_NOT 55
-#define NATIVE_BUFFER_TO_VEIL_PKTS 56
-#define NATIVE_BUFFER_FROM_VEIL_PKTS 57
-#define NATIVE_HTTP_DECODE 58
-#define NATIVE_HTTP_ENCODE 59
-#define NATIVE_STRING_HTML_ESCAPE 60
-#define NATIVE_MATH_MINOR 61
-#define NATIVE_MATH_MAJOR 62
-#define NATIVE_MATH_ADD 63
-#define NATIVE_MATH_SUB 64
-#define NATIVE_MATH_DOT 65
-#define NATIVE_MATH_DISTANCE 66
-#define NATIVE_MATH_CROSS 67
-#define NATIVE_MATH_SCALE 68
-#define NATIVE_MATH_IS_LOWER 69
-#define NATIVE_MATH_TRANSPOSE 70
-#define NATIVE_LAST 71
+#define NATIVE_MATH_MINOR 56
+#define NATIVE_MATH_MAJOR 57
+#define NATIVE_MATH_ADD 58
+#define NATIVE_MATH_SUB 59
+#define NATIVE_MATH_DOT 60
+#define NATIVE_MATH_DISTANCE 61
+#define NATIVE_MATH_CROSS 62
+#define NATIVE_MATH_SCALE 63
+#define NATIVE_MATH_IS_LOWER 64
+#define NATIVE_MATH_TRANSPOSE 65
+#define NATIVE_HTTP_DECODE 66
+#define NATIVE_HTTP_ENCODE 67
+#define NATIVE_STRING_HTML_ESCAPE 68
+#define NATIVE_LAST 69
 
-#define MAGIC_MODNUMBER 1331355637
+#define MAGIC_MODNUMBER 1445283306
 
 
 #ifdef _native_
@@ -158,11 +154,6 @@ native_t natives[NATIVE_LAST] = {
     {"integer",      "shleft",            native_shleft},
     {"integer",      "shright",           native_shright},
     {"integer",      "not",               native_not},
-    {"buffer",       "to_veil_pkts",      native_to_veil_pkts},
-    {"buffer",       "from_veil_pkts",    native_from_veil_pkts},
-    {"http",         "decode",            native_decode},
-    {"http",         "encode",            native_encode},
-    {"string",       "html_escape",       native_html_escape},
     {"math",         "minor",             native_minor},
     {"math",         "major",             native_major},
     {"math",         "add",               native_add},
@@ -173,6 +164,9 @@ native_t natives[NATIVE_LAST] = {
     {"math",         "scale",             native_scale},
     {"math",         "is_lower",          native_is_lower},
     {"math",         "transpose",         native_transpose},
+    {"http",         "decode",            native_decode},
+    {"http",         "encode",            native_encode},
+    {"string",       "html_escape",       native_html_escape},
 };
 #else
 extern native_t natives[NATIVE_LAST];
